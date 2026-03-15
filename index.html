@@ -368,7 +368,8 @@ function selectTopic(el){
 // ── CLAUDE API ────────────────────────────────────────────────────────────────
 async function callClaude(prompt){
   const res=await fetch('https://api.anthropic.com/v1/messages',{
-    method:'POST', headers:{'Content-Type':'application/json'},
+    method:'POST', headers:{'Content-Type':'application/json','x-api-key': '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',
+    'anthropic-version': '2023-06-01'},
     body:JSON.stringify({ model:'claude-sonnet-4-20250514', max_tokens:1000, messages:[{role:'user',content:prompt}] })
   });
   if(!res.ok)throw new Error('API '+res.status);
