@@ -376,8 +376,10 @@ async function callClaude(prompt) {
       messages: [{ role: 'user', content: prompt }]
     })
   });
-  if (!res.ok) throw new Error('API ' + res.status);
   const data = await res.json();
+  console.log('STATUS:', res.status);
+  console.log('RESPONSE:', JSON.stringify(data));
+  if (!res.ok) throw new Error('API ' + res.status);
   return data.content.map(b => b.text || '').join('');
 }
 // ── GENERATE ──────────────────────────────────────────────────────────────────
