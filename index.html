@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ReadingStars AI ✨</title>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;700;800&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --sun:#FFD166;--coral:#FF6B6B;--mint:#06D6A0;
+    --sky:#4ECDC4;--purple:#C77DFF;--pink:#FF9ECD;
+    --bg:#0f0f23;--card-bg:#1e1e3a;--text:#f0f0ff;--muted:#9090b0;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'Nunito',sans-serif;background:var(--bg);min-height:100vh;color:var(--text);overflow-x:hidden;}
+
+  #starfield{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden;}
+  .star-dot{position:absolute;border-radius:50%;background:#fff;animation:twinkle ease-in-out infinite;}
+  @keyframes twinkle{0%,100%{opacity:.1;transform:scale(1)}50%{opacity:.9;transform:scale(1.4)}}
+
+  /* HEADER */
+  header{position:relative;z-index:10;display:flex;align-items:center;justify-content:space-between;padding:14px 24px;background:rgba(30,30,58,0.9);backdrop-filter:blur(12px);border-bottom:1px solid rgba(255,255,255,0.07);gap:12px;flex-wrap:wrap;}
+  .logo{font-family:'Baloo 2',cursive;font-size:1.7rem;font-weight:800;background:linear-gradient(135deg,var(--sun),var(--pink),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;white-space:nowrap;}
+  .hud{display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
+  .hud-pill{background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);border-radius:50px;padding:7px 16px;font-size:.95rem;font-weight:700;display:flex;align-items:center;gap:5px;}
+  .hud-pill .val{color:var(--sun);}
+  .level-badge{background:linear-gradient(135deg,var(--purple),var(--sky));border-radius:50px;padding:7px 16px;font-weight:800;font-size:.85rem;text-transform:uppercase;letter-spacing:1px;}
+  .switch-btn{background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);border-radius:50px;padding:7px 14px;font-size:.85rem;font-weight:700;color:var(--muted);cursor:pointer;transition:all .2s;}
+  .switch-btn:hover{color:var(--text);border-color:rgba(255,255,255,0.3);}
+
+  main{position:relative;z-index:1;max-width:780px;margin:0 auto;padding:36px 20px 80px;}
+
+  /* PROFILE SCREEN */
+  .profile-screen{animation:fadeUp .4s ease;}
+  .profile-title{font-family:'Baloo 2',cursive;font-size:2rem;font-weight:800;text-align:center;margin-bottom:8px;background:linear-gradient(135deg,var(--sun),var(--pink));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+  .profile-sub{text-align:center;color:var(--muted);font-size:1rem;margin-bottom:32px;}
+  .profiles-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:14px;margin-bottom:28px;}
+  .profile-card{background:var(--card-bg);border:2px solid rgba(255,255,255,0.08);border-radius:22px;padding:24px 16px;text-align:center;cursor:pointer;transition:all .22s cubic-bezier(.34,1.56,.64,1);position:relative;}
+  .profile-card:hover{transform:translateY(-5px) scale(1.03);border-color:rgba(255,255,255,0.25);}
+  .profile-card.add-new{border-style:dashed;border-color:rgba(255,255,255,0.2);}
+  .profile-card.add-new:hover{border-color:var(--mint);box-shadow:0 0 24px rgba(6,214,160,0.2);}
+  .profile-avatar{font-size:3.5rem;display:block;margin-bottom:10px;}
+  .profile-name{font-family:'Baloo 2',cursive;font-size:1.1rem;font-weight:700;margin-bottom:4px;}
+  .profile-stats{font-size:.82rem;color:var(--muted);}
+  .profile-delete{position:absolute;top:8px;right:10px;background:none;border:none;color:rgba(255,100,100,0.4);font-size:1.1rem;cursor:pointer;padding:2px 6px;border-radius:8px;transition:all .2s;line-height:1;}
+  .profile-delete:hover{color:var(--coral);background:rgba(255,107,107,0.1);}
+
+  /* NEW PROFILE FORM */
+  .new-profile-card{background:var(--card-bg);border-radius:28px;padding:36px;border:1px solid rgba(255,255,255,0.08);animation:fadeUp .4s ease;}
+  .form-title{font-family:'Baloo 2',cursive;font-size:1.6rem;font-weight:800;text-align:center;margin-bottom:24px;}
+  .avatar-picker{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-bottom:24px;}
+  .avatar-opt{font-size:2.4rem;padding:10px;border-radius:16px;border:2px solid transparent;cursor:pointer;transition:all .2s;background:rgba(255,255,255,0.05);}
+  .avatar-opt:hover{transform:scale(1.15);}
+  .avatar-opt.selected{border-color:var(--sun);background:rgba(255,209,102,0.15);transform:scale(1.15);}
+  .name-input{width:100%;font-family:'Nunito',sans-serif;font-size:1.3rem;font-weight:700;padding:16px 20px;border-radius:18px;border:2px solid rgba(255,255,255,0.12);background:rgba(255,255,255,0.06);color:var(--text);outline:none;margin-bottom:10px;transition:border-color .2s;text-align:center;}
+  .name-input::placeholder{color:var(--muted);}
+  .name-input:focus{border-color:var(--sky);}
+  .lang-row-form{display:flex;justify-content:center;gap:12px;margin-bottom:24px;}
+  .lang-btn{font-family:'Baloo 2',cursive;font-size:1rem;font-weight:700;padding:10px 24px;border:2px solid rgba(255,255,255,0.12);border-radius:50px;background:rgba(255,255,255,0.06);color:var(--muted);cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:7px;}
+  .lang-btn:hover{border-color:rgba(255,255,255,0.3);color:var(--text);}
+  .lang-btn.active{border-color:var(--sky);background:rgba(78,205,196,0.15);color:var(--text);box-shadow:0 0 18px rgba(78,205,196,0.2);}
+  .form-actions{display:flex;gap:12px;justify-content:center;}
+  .save-btn{font-family:'Baloo 2',cursive;font-size:1.2rem;font-weight:800;padding:14px 38px;border:none;border-radius:50px;cursor:pointer;background:linear-gradient(135deg,var(--mint),var(--sky));color:#003;box-shadow:0 6px 20px rgba(6,214,160,0.3);transition:all .22s cubic-bezier(.34,1.56,.64,1);}
+  .save-btn:hover:not(:disabled){transform:translateY(-3px) scale(1.03);}
+  .save-btn:disabled{opacity:.4;cursor:not-allowed;}
+  .cancel-btn{font-family:'Baloo 2',cursive;font-size:1.1rem;font-weight:700;padding:14px 28px;border:2px solid rgba(255,255,255,0.15);border-radius:50px;cursor:pointer;background:transparent;color:var(--muted);transition:all .2s;}
+  .cancel-btn:hover{color:var(--text);border-color:rgba(255,255,255,0.3);}
+
+  /* PICKER SCREEN */
+  .lang-row{display:flex;justify-content:center;gap:12px;margin-bottom:26px;}
+  .section-title{font-family:'Baloo 2',cursive;font-size:1.4rem;font-weight:700;margin-bottom:18px;color:var(--muted);text-align:center;}
+  .topic-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:32px;}
+  .topic-card{background:var(--card-bg);border:2px solid rgba(255,255,255,0.07);border-radius:22px;padding:22px 10px;text-align:center;cursor:pointer;transition:all .22s cubic-bezier(.34,1.56,.64,1);position:relative;overflow:hidden;}
+  .topic-card::before{content:'';position:absolute;inset:0;opacity:0;transition:opacity .22s;border-radius:20px;}
+  .topic-card:hover{transform:translateY(-6px) scale(1.03);border-color:rgba(255,255,255,0.25);}
+  .topic-card.selected{transform:translateY(-6px) scale(1.05);}
+  .topic-card.selected::before{opacity:1;}
+  .topic-card[data-topic="animals"].selected{border-color:var(--mint);box-shadow:0 0 28px rgba(6,214,160,0.3);}
+  .topic-card[data-topic="animals"]::before{background:radial-gradient(circle at center,rgba(6,214,160,.15),transparent);}
+  .topic-card[data-topic="space"].selected{border-color:var(--sky);box-shadow:0 0 28px rgba(78,205,196,0.3);}
+  .topic-card[data-topic="space"]::before{background:radial-gradient(circle at center,rgba(78,205,196,.15),transparent);}
+  .topic-card[data-topic="everyday"].selected{border-color:var(--sun);box-shadow:0 0 28px rgba(255,209,102,0.3);}
+  .topic-card[data-topic="everyday"]::before{background:radial-gradient(circle at center,rgba(255,209,102,.15),transparent);}
+  .topic-card[data-topic="fantasy"].selected{border-color:var(--purple);box-shadow:0 0 28px rgba(199,125,255,0.3);}
+  .topic-card[data-topic="fantasy"]::before{background:radial-gradient(circle at center,rgba(199,125,255,.15),transparent);}
+  .topic-card[data-topic="princess"].selected{border-color:var(--pink);box-shadow:0 0 28px rgba(255,158,205,0.3);}
+  .topic-card[data-topic="princess"]::before{background:radial-gradient(circle at center,rgba(255,158,205,.15),transparent);}
+  .topic-card[data-topic="surprise"].selected{border-color:var(--sun);box-shadow:0 0 28px rgba(255,209,102,0.3);}
+  .topic-card[data-topic="surprise"]::before{background:radial-gradient(circle at center,rgba(255,209,102,.15),transparent);}
+  .topic-emoji{font-size:2.8rem;display:block;margin-bottom:8px;}
+  .topic-label{font-family:'Baloo 2',cursive;font-size:.95rem;font-weight:700;color:var(--text);}
+  .generate-btn{font-family:'Baloo 2',cursive;font-size:1.35rem;font-weight:800;padding:17px 46px;border:none;border-radius:60px;cursor:pointer;display:block;margin:0 auto 36px;background:linear-gradient(135deg,var(--coral),var(--purple));color:#fff;box-shadow:0 8px 28px rgba(255,107,107,0.4);transition:all .22s cubic-bezier(.34,1.56,.64,1);}
+  .generate-btn:hover:not(:disabled){transform:translateY(-4px) scale(1.04);}
+  .generate-btn:disabled{opacity:.45;cursor:not-allowed;transform:none;}
+
+  /* LOADING */
+  .loading-card{background:var(--card-bg);border-radius:28px;padding:50px;text-align:center;border:1px solid rgba(255,255,255,0.07);}
+  .spinner{width:58px;height:58px;border:5px solid rgba(255,255,255,0.1);border-top-color:var(--purple);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 18px;}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .loading-text{font-family:'Baloo 2',cursive;font-size:1.2rem;color:var(--muted);animation:pulse 1.5s ease-in-out infinite;}
+  @keyframes pulse{0%,100%{opacity:.5}50%{opacity:1}}
+
+  /* STORY */
+  .story-card{background:var(--card-bg);border-radius:28px;padding:34px;border:1px solid rgba(255,255,255,0.08);animation:fadeUp .5s ease;margin-bottom:18px;position:relative;overflow:hidden;}
+  .story-card::after{content:'';position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,var(--coral),var(--purple),var(--sky));}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:translateY(0)}}
+  .story-hero{font-size:4.5rem;text-align:center;margin-bottom:6px;animation:floatHero 3s ease-in-out infinite;}
+  @keyframes floatHero{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
+  .story-title{font-family:'Baloo 2',cursive;font-size:1.9rem;font-weight:800;text-align:center;margin-bottom:22px;background:linear-gradient(135deg,var(--sun),var(--pink));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+  .story-body{font-size:1.25rem;line-height:2;color:#d0d0f0;background:rgba(255,255,255,0.04);border-radius:18px;padding:22px 26px;border-left:4px solid var(--purple);margin-bottom:26px;}
+  .read-btn{font-family:'Baloo 2',cursive;font-size:1.2rem;font-weight:800;padding:15px 40px;border:none;border-radius:60px;cursor:pointer;display:block;margin:0 auto;background:linear-gradient(135deg,var(--mint),var(--sky));color:#003;box-shadow:0 6px 22px rgba(6,214,160,0.32);transition:all .22s cubic-bezier(.34,1.56,.64,1);}
+  .read-btn:hover{transform:translateY(-3px) scale(1.03);}
+
+  /* QUESTIONS */
+  .question-card{background:var(--card-bg);border-radius:28px;padding:34px;border:1px solid rgba(255,255,255,0.08);animation:fadeUp .4s ease;position:relative;overflow:hidden;}
+  .question-card::after{content:'';position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,var(--sun),var(--coral));}
+  .progress-row{display:flex;align-items:center;gap:12px;margin-bottom:22px;}
+  .progress-track{flex:1;height:10px;background:rgba(255,255,255,0.08);border-radius:50px;overflow:hidden;}
+  .progress-fill{height:100%;border-radius:50px;background:linear-gradient(90deg,var(--sun),var(--coral));transition:width .5s ease;}
+  .progress-label{font-size:.85rem;font-weight:700;color:var(--muted);white-space:nowrap;}
+  .q-text{font-family:'Baloo 2',cursive;font-size:1.35rem;font-weight:700;margin-bottom:20px;text-align:center;}
+  .choices{display:grid;grid-template-columns:1fr 1fr;gap:11px;margin-bottom:22px;}
+  .choice-btn{font-family:'Nunito',sans-serif;font-size:1.05rem;font-weight:700;padding:17px 12px;border:2px solid rgba(255,255,255,0.1);border-radius:17px;background:rgba(255,255,255,0.05);color:var(--text);cursor:pointer;transition:all .18s;text-align:center;}
+  .choice-btn:hover:not(:disabled){border-color:var(--purple);background:rgba(199,125,255,0.12);transform:scale(1.03);}
+  .choice-btn.correct{border-color:var(--mint);background:rgba(6,214,160,0.15);color:#afffea;}
+  .choice-btn.wrong{border-color:var(--coral);background:rgba(255,107,107,0.15);color:#ffcaca;}
+  .feedback-bar{border-radius:15px;padding:15px 18px;font-size:1.05rem;font-weight:700;text-align:center;margin-bottom:18px;display:none;}
+  .feedback-bar.show{display:block;animation:fadeUp .3s ease;}
+  .feedback-bar.correct{background:rgba(6,214,160,0.15);color:#afffea;border:1px solid rgba(6,214,160,0.3);}
+  .feedback-bar.wrong{background:rgba(255,107,107,0.15);color:#ffcaca;border:1px solid rgba(255,107,107,0.3);}
+  .next-btn{font-family:'Baloo 2',cursive;font-size:1.15rem;font-weight:800;padding:14px 38px;border:none;border-radius:60px;cursor:pointer;display:none;margin:0 auto;background:linear-gradient(135deg,var(--sun),var(--coral));color:#3a1500;box-shadow:0 6px 18px rgba(255,209,102,0.28);transition:all .22s cubic-bezier(.34,1.56,.64,1);}
+  .next-btn.show{display:block;animation:fadeUp .3s ease;}
+  .next-btn:hover{transform:translateY(-3px) scale(1.03);}
+
+  /* CELEBRATION */
+  .celebration-card{background:var(--card-bg);border-radius:28px;padding:46px 34px;text-align:center;border:1px solid rgba(255,255,255,0.08);animation:fadeUp .5s ease;}
+  .celebration-emoji{font-size:5.5rem;display:block;animation:popIn .6s cubic-bezier(.34,1.56,.64,1);}
+  @keyframes popIn{from{transform:scale(0) rotate(-20deg)}to{transform:scale(1) rotate(0)}}
+  .celebration-title{font-family:'Baloo 2',cursive;font-size:2rem;font-weight:800;margin:14px 0 6px;background:linear-gradient(135deg,var(--sun),var(--pink));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+  .celebration-sub{font-size:1.05rem;color:var(--muted);margin-bottom:8px;}
+  .score-display{font-size:2.8rem;font-weight:800;color:var(--sun);margin:18px 0;font-family:'Baloo 2',cursive;}
+  .play-again-btn{font-family:'Baloo 2',cursive;font-size:1.25rem;font-weight:800;padding:15px 42px;border:none;border-radius:60px;cursor:pointer;background:linear-gradient(135deg,var(--coral),var(--purple));color:#fff;box-shadow:0 8px 28px rgba(199,125,255,0.38);transition:all .22s cubic-bezier(.34,1.56,.64,1);margin-top:8px;}
+  .play-again-btn:hover{transform:translateY(-4px) scale(1.04);}
+
+  .error-card{background:rgba(255,107,107,0.1);border:1px solid rgba(255,107,107,0.3);border-radius:20px;padding:26px;text-align:center;color:#ffcaca;}
+
+  .confetti-piece{position:fixed;pointer-events:none;z-index:999;animation:confettiFall linear forwards;}
+  @keyframes confettiFall{0%{transform:translateY(-10px) rotate(0);opacity:1}100%{transform:translateY(100vh) rotate(720deg);opacity:0}}
+
+  /* WELCOME BANNER */
+  .welcome-banner{background:linear-gradient(135deg,rgba(199,125,255,0.12),rgba(78,205,196,0.12));border:1px solid rgba(255,255,255,0.09);border-radius:20px;padding:18px 24px;text-align:center;margin-bottom:24px;animation:fadeUp .4s ease;}
+  .welcome-banner h2{font-family:'Baloo 2',cursive;font-size:1.5rem;margin-bottom:4px;}
+  .welcome-banner p{font-size:.95rem;color:var(--muted);}
+
+  @media(max-width:540px){
+    .topic-grid{gap:9px;}
+    .topic-emoji{font-size:2.2rem;}
+    .topic-label{font-size:.78rem;}
+    .choices{grid-template-columns:1fr;}
+    .story-body{font-size:1.1rem;}
+    .hud{gap:7px;}
+    .hud-pill{padding:6px 11px;font-size:.82rem;}
+    header{padding:12px 14px;}
+    .profiles-grid{grid-template-columns:repeat(2,1fr);}
+  }
+</style>
+</head>
+<body>
+
+<div id="starfield"></div>
+
+<header>
+  <div class="logo">✨ ReadingStars AI</div>
+  <div class="hud" id="hud" style="display:none">
+    <div class="hud-pill">👤 <span class="val" id="hudName">—</span></div>
+    <div class="hud-pill">⭐ <span class="val" id="starCount">0</span></div>
+    <div class="hud-pill">📖 <span class="val" id="storyCount">0</span></div>
+    <div class="level-badge" id="levelBadge">Level 1</div>
+    <button class="switch-btn" onclick="goToProfiles()">👥 Switch</button>
+  </div>
+</header>
+
+<main id="main"></main>
+
+<script>
+// ── STORAGE ───────────────────────────────────────────────────────────────────
+const STORAGE_KEY = 'readingstars_profiles_v2';
+function loadProfiles(){ try{return JSON.parse(localStorage.getItem(STORAGE_KEY))||[];}catch{return[];} }
+function saveProfiles(p){ localStorage.setItem(STORAGE_KEY, JSON.stringify(p)); }
+function getProfile(id){ return loadProfiles().find(p=>p.id===id)||null; }
+function upsertProfile(profile){ const all=loadProfiles(); const i=all.findIndex(p=>p.id===profile.id); if(i>=0)all[i]=profile; else all.push(profile); saveProfiles(all); }
+function deleteProfile(id){ saveProfiles(loadProfiles().filter(p=>p.id!==id)); }
+function newId(){ return 'p_'+Date.now()+'_'+Math.random().toString(36).slice(2,7); }
+
+// ── STATE ─────────────────────────────────────────────────────────────────────
+let activeProfile = null;
+let lang = 'en';
+let selectedTopic = null;
+let currentStory = null;
+let currentQIndex = 0;
+
+// ── STARFIELD ─────────────────────────────────────────────────────────────────
+(function(){
+  const sf=document.getElementById('starfield');
+  for(let i=0;i<120;i++){
+    const s=document.createElement('div'); s.className='star-dot';
+    const sz=1+Math.random()*2.5;
+    s.style.cssText=`width:${sz}px;height:${sz}px;left:${Math.random()*100}%;top:${Math.random()*100}%;animation-duration:${2+Math.random()*4}s;animation-delay:${Math.random()*4}s;`;
+    sf.appendChild(s);
+  }
+})();
+
+// ── DIFFICULTY ────────────────────────────────────────────────────────────────
+function getLangStats(){ return activeProfile ? (activeProfile[lang]||{storiesRead:0}) : {storiesRead:0}; }
+function getLevel(){ const s=getLangStats().storiesRead||0; if(s<3)return 1; if(s<7)return 2; return 3; }
+function getLevelLabel(){ const l=getLevel(); if(lang==='fr')return l===1?'Niveau 1 🌱':l===2?'Niveau 2 🌟':'Niveau 3 🚀'; return l===1?'Level 1 🌱':l===2?'Level 2 🌟':'Level 3 🚀'; }
+function getLevelDesc(){ const l=getLevel(); if(l===1)return'very short and simple, using only 3-4 letter words where possible, about 4-5 sentences long'; if(l===2)return'medium length, using some longer words, about 6-7 sentences long'; return'a bit longer and more detailed, with richer vocabulary, about 8-9 sentences long'; }
+
+// ── HUD ───────────────────────────────────────────────────────────────────────
+function updateHud(){
+  if(!activeProfile){document.getElementById('hud').style.display='none';return;}
+  const ls=getLangStats();
+  document.getElementById('hud').style.display='flex';
+  document.getElementById('hudName').textContent=activeProfile.name;
+  document.getElementById('starCount').textContent=ls.stars||0;
+  document.getElementById('storyCount').textContent=ls.storiesRead||0;
+  document.getElementById('levelBadge').textContent=getLevelLabel();
+}
+
+// ── PROFILE SCREEN ────────────────────────────────────────────────────────────
+function goToProfiles(){ activeProfile=null; document.getElementById('hud').style.display='none'; renderProfileScreen(); }
+
+function renderProfileScreen(){
+  const profiles=loadProfiles();
+  document.getElementById('main').innerHTML=`
+    <div class="profile-screen">
+      <div class="profile-title">Who's reading today? 📚</div>
+      <div class="profile-sub">Pick your name or add a new reader!</div>
+      <div class="profiles-grid">
+        ${profiles.map(p=>{
+          const en=p.en||{stars:0,storiesRead:0};
+          const fr=p.fr||{stars:0,storiesRead:0};
+          const totalStars=(en.stars||0)+(fr.stars||0);
+          const totalStories=(en.storiesRead||0)+(fr.storiesRead||0);
+          return `
+          <div class="profile-card" onclick="selectProfile('${p.id}')">
+            <button class="profile-delete" onclick="event.stopPropagation();confirmDelete('${p.id}')" title="Remove">✕</button>
+            <span class="profile-avatar">${p.avatar}</span>
+            <div class="profile-name">${p.name}</div>
+            <div class="profile-stats">⭐ ${totalStars} &nbsp;·&nbsp; 📖 ${totalStories}</div>
+          </div>`;}).join('')}
+        <div class="profile-card add-new" onclick="renderNewProfileForm()">
+          <span class="profile-avatar">➕</span>
+          <div class="profile-name">Add Reader</div>
+          <div class="profile-stats">New profile</div>
+        </div>
+      </div>
+    </div>`;
+}
+
+function confirmDelete(id){
+  const p=getProfile(id); if(!p)return;
+  if(confirm(`Remove ${p.name}'s profile? All their progress will be lost.`)){ deleteProfile(id); renderProfileScreen(); }
+}
+
+function selectProfile(id){
+  const p=getProfile(id); if(!p)return;
+  // Migrate old flat-format profiles to new per-language format
+  if(!p.en){
+    p.en={ stars: p.stars||0, storiesRead: p.storiesRead||0, correctAnswers: p.correctAnswers||0, totalAnswers: p.totalAnswers||0 };
+    p.fr={ stars:0, storiesRead:0, correctAnswers:0, totalAnswers:0 };
+    delete p.stars; delete p.storiesRead; delete p.correctAnswers; delete p.totalAnswers;
+    upsertProfile(p);
+  }
+  activeProfile={...p, en:{...p.en}, fr:{...p.fr}}; lang=p.lang||'en';
+  updateHud(); renderPickerScreen(true);
+}
+
+// ── NEW PROFILE FORM ──────────────────────────────────────────────────────────
+const AVATARS=['🐸','🦁','🐱','🐶','🐰','🦊','🐻','🐼','🦄','👸','🚀','🌟'];
+let newLang='en', newAvatar=AVATARS[0];
+
+function renderNewProfileForm(){
+  newLang='en'; newAvatar=AVATARS[0];
+  document.getElementById('main').innerHTML=`
+    <div class="new-profile-card">
+      <div class="form-title">Create your profile! 🎉</div>
+      <div class="avatar-picker">
+        ${AVATARS.map((a,i)=>`<span class="avatar-opt${i===0?' selected':''}" onclick="pickAvatar(this,'${a}')">${a}</span>`).join('')}
+      </div>
+      <input class="name-input" id="nameInput" type="text" maxlength="20" placeholder="Type your name..." oninput="checkName()" autocomplete="off"/>
+      <div class="lang-row-form">
+        <button class="lang-btn active" id="nLangEN" onclick="setNewLang('en')">🇨🇦 English</button>
+        <button class="lang-btn" id="nLangFR" onclick="setNewLang('fr')">🇨🇦 Français</button>
+      </div>
+      <div class="form-actions">
+        <button class="cancel-btn" onclick="renderProfileScreen()">← Back</button>
+        <button class="save-btn" id="saveBtn" disabled onclick="saveNewProfile()">Let's Read! 🚀</button>
+      </div>
+    </div>`;
+}
+function pickAvatar(el,a){ document.querySelectorAll('.avatar-opt').forEach(x=>x.classList.remove('selected')); el.classList.add('selected'); newAvatar=a; }
+function setNewLang(l){ newLang=l; document.getElementById('nLangEN').classList.toggle('active',l==='en'); document.getElementById('nLangFR').classList.toggle('active',l==='fr'); }
+function checkName(){ document.getElementById('saveBtn').disabled=document.getElementById('nameInput').value.trim().length<1; }
+function saveNewProfile(){
+  const name=document.getElementById('nameInput').value.trim(); if(!name)return;
+  const profile={
+    id:newId(), name, avatar:newAvatar, lang:newLang,
+    // separate tracking per language
+    en:{ stars:0, storiesRead:0, correctAnswers:0, totalAnswers:0 },
+    fr:{ stars:0, storiesRead:0, correctAnswers:0, totalAnswers:0 },
+    createdAt:Date.now()
+  };
+  upsertProfile(profile); activeProfile={...profile}; lang=newLang;
+  updateHud(); renderPickerScreen(false);
+}
+
+// ── PICKER SCREEN ─────────────────────────────────────────────────────────────
+function renderPickerScreen(returning){
+  selectedTopic=null;
+  const p=activeProfile;
+  const isNew=(activeProfile.en.storiesRead===0 && activeProfile.fr.storiesRead===0);
+  const ls=getLangStats();
+  const greeting=lang==='fr'?`Bonjour, ${p.name} ${p.avatar} !`:`Welcome back, ${p.name} ${p.avatar}!`;
+  const statLine=lang==='fr'
+    ?`${ls.storiesRead||0} histoires lues &nbsp;·&nbsp; ⭐ ${ls.stars||0} étoiles &nbsp;·&nbsp; ${getLevelLabel()}`
+    :`${ls.storiesRead||0} stories read &nbsp;·&nbsp; ⭐ ${ls.stars||0} stars &nbsp;·&nbsp; ${getLevelLabel()}`;
+  const topicQ=lang==='fr'?"Sur quoi veux-tu lire aujourd'hui ? 🌟":"What would you like to read about today? 🌟";
+  const genLabel=lang==='fr'?"Créer mon histoire !":"Create My Story!";
+  const labelsEN={animals:'Animals',space:'Space',everyday:'Everyday',fantasy:'Fantasy',princess:'Princess',surprise:'Surprise!'};
+  const labelsFR={animals:'Animaux',space:"L'espace",everyday:'Quotidien',fantasy:'Fantaisie',princess:'Princesse',surprise:'Surprise !'};
+  const emojis={animals:'🐸',space:'🚀',everyday:'🏫',fantasy:'🧙',princess:'👸',surprise:'🎲'};
+  const labels=lang==='fr'?labelsFR:labelsEN;
+
+  document.getElementById('main').innerHTML=`
+    ${returning&&!isNew?`<div class="welcome-banner"><h2>${greeting}</h2><p>${statLine}</p></div>`:''}
+    <div id="pickerSection">
+      <div class="lang-row">
+        <button class="lang-btn${lang==='en'?' active':''}" id="langEN" onclick="switchLang('en')">🇨🇦 English</button>
+        <button class="lang-btn${lang==='fr'?' active':''}" id="langFR" onclick="switchLang('fr')">🇨🇦 Français</button>
+      </div>
+      <p class="section-title">${topicQ}</p>
+      <div class="topic-grid">
+        ${Object.keys(labelsEN).map(t=>`
+          <div class="topic-card" data-topic="${t}" onclick="selectTopic(this)">
+            <span class="topic-emoji">${emojis[t]}</span>
+            <div class="topic-label">${labels[t]}</div>
+          </div>`).join('')}
+      </div>
+      <button class="generate-btn" id="generateBtn" onclick="generateStory()" disabled>🪄 ${genLabel}</button>
+    </div>
+    <div id="contentArea"></div>`;
+}
+
+function switchLang(l){
+  lang=l;
+  if(activeProfile){ activeProfile.lang=l; upsertProfile(activeProfile); }
+  document.getElementById('levelBadge').textContent=getLevelLabel();
+  renderPickerScreen(true);
+}
+
+function selectTopic(el){
+  document.querySelectorAll('.topic-card').forEach(c=>c.classList.remove('selected'));
+  el.classList.add('selected'); selectedTopic=el.dataset.topic;
+  document.getElementById('generateBtn').disabled=false;
+}
+
+// ── CLAUDE API ────────────────────────────────────────────────────────────────
+async function callClaude(prompt){
+  const res=await fetch('https://api.anthropic.com/v1/messages',{
+    method:'POST', headers:{'Content-Type':'application/json','x-api-key': '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',
+    'anthropic-version': '2023-06-01'},
+    body:JSON.stringify({ model:'claude-sonnet-4-20250514', max_tokens:1000, messages:[{role:'user',content:prompt}] })
+  });
+  if(!res.ok)throw new Error('API '+res.status);
+  const data=await res.json();
+  return data.content.map(b=>b.text||'').join('');
+}
+
+// ── GENERATE ──────────────────────────────────────────────────────────────────
+async function generateStory(){
+  if(!selectedTopic)return;
+  const tmEN={animals:'animals and nature',space:'space and adventure',everyday:'everyday life like school, family, or friends',fantasy:'fantasy and magic',princess:'princesses and kingdoms',surprise:'any fun, surprising topic'};
+  const tmFR={animals:'les animaux et la nature',space:"l'espace et l'aventure",everyday:"la vie quotidienne comme l'école, la famille ou les amis",fantasy:'la fantaisie et la magie',princess:'les princesses et les royaumes',surprise:"n'importe quel sujet amusant"};
+  const topicLabel=lang==='fr'?tmFR[selectedTopic]:tmEN[selectedTopic];
+  const loadMsg=lang==='fr'?"✨ J'écris ton histoire...":'✨ Writing your story...';
+
+  document.getElementById('pickerSection').style.display='none';
+  document.getElementById('contentArea').innerHTML=`<div class="loading-card"><div class="spinner"></div><div class="loading-text">${loadMsg}</div></div>`;
+
+  const langInstr=lang==='fr'
+    ?`Write EVERYTHING — title, story, all questions and answer choices — in Canadian French (français québécois). Simple vocabulary for a Grade 1 child in Quebec (age 6-7).`
+    :`Write everything in clear, simple English for a Grade 1 child (age 6-7).`;
+
+  const prompt=`You are a children's reading teacher. Create a reading exercise for a Grade 1 child.
+Topic: ${topicLabel}
+Difficulty: ${getLevelDesc()}
+Language: ${langInstr}
+
+Return ONLY valid JSON, no other text:
+{"emoji":"<emoji>","title":"<title>","story":"<story>","questions":[{"question":"<q>","choices":["A","B","C","D"],"correctIndex":0},{"question":"<q>","choices":["A","B","C","D"],"correctIndex":1},{"question":"<q>","choices":["A","B","C","D"],"correctIndex":2}]}
+
+Rules: age-appropriate, joyful, questions answerable from story, simple vocabulary, positive content only.`;
+
+  try{
+    const raw=await callClaude(prompt);
+    currentStory=JSON.parse(raw.replace(/```json|```/g,'').trim());
+    currentQIndex=0; showStory();
+  }catch(err){
+    const msg=lang==='fr'
+      ?"<h3>⚠️ Oups !</h3><p>Impossible de charger l'histoire. Réessaie.</p>"
+      :"<h3>⚠️ Oops!</h3><p>Couldn't load the story. Please try again.</p>";
+    document.getElementById('contentArea').innerHTML=`<div class="error-card">${msg}</div>`;
+    document.getElementById('pickerSection').style.display='block';
+    console.error(err);
+  }
+}
+
+// ── STORY ─────────────────────────────────────────────────────────────────────
+function showStory(){
+  const s=currentStory;
+  const btn=lang==='fr'?"Je l'ai lu ! 👉 Répondre aux questions":"I've read it! 👉 Answer questions";
+  document.getElementById('contentArea').innerHTML=`
+    <div class="story-card">
+      <div class="story-hero">${s.emoji}</div>
+      <div class="story-title">${s.title}</div>
+      <div class="story-body">${s.story}</div>
+      <button class="read-btn" onclick="showQuestion()">${btn}</button>
+    </div>`;
+}
+
+// ── QUESTIONS ─────────────────────────────────────────────────────────────────
+function showQuestion(){
+  const q=currentStory.questions[currentQIndex];
+  const total=currentStory.questions.length;
+  const pct=(currentQIndex/total)*100;
+  const isLast=currentQIndex+1>=total;
+  const nextLabel=isLast?(lang==='fr'?'🎉 Voir les résultats !':'🎉 See Results!'):(lang==='fr'?'Question suivante →':'Next Question →');
+  document.getElementById('contentArea').innerHTML=`
+    <div class="question-card">
+      <div class="progress-row">
+        <div class="progress-track"><div class="progress-fill" style="width:${pct}%"></div></div>
+        <div class="progress-label">${currentQIndex+1} / ${total}</div>
+      </div>
+      <div class="q-text">❓ ${q.question}</div>
+      <div class="choices">
+        ${q.choices.map((ch,i)=>`<button class="choice-btn" onclick="answerQ(${i})">${ch}</button>`).join('')}
+      </div>
+      <div class="feedback-bar" id="fb"></div>
+      <button class="next-btn" id="nextBtn" onclick="nextQuestion()">${nextLabel}</button>
+    </div>`;
+}
+
+function answerQ(chosen){
+  const q=currentStory.questions[currentQIndex];
+  const btns=document.querySelectorAll('.choice-btn');
+  btns.forEach(b=>b.disabled=true);
+  if(!activeProfile[lang]) activeProfile[lang]={stars:0,storiesRead:0,correctAnswers:0,totalAnswers:0};
+  activeProfile[lang].totalAnswers=(activeProfile[lang].totalAnswers||0)+1;
+  const fb=document.getElementById('fb');
+
+  if(chosen===q.correctIndex){
+    btns[chosen].classList.add('correct');
+    fb.textContent=lang==='fr'?"🌟 Oui ! C'est correct ! Bravo !":"🌟 Yes! That's correct! Well done!";
+    fb.className='feedback-bar correct show';
+    activeProfile[lang].stars=(activeProfile[lang].stars||0)+1;
+    activeProfile[lang].correctAnswers=(activeProfile[lang].correctAnswers||0)+1;
+    upsertProfile(activeProfile);
+    document.getElementById('starCount').textContent=activeProfile[lang].stars;
+    launchConfetti();
+  }else{
+    btns[chosen].classList.add('wrong');
+    btns[q.correctIndex].classList.add('correct');
+    fb.textContent=lang==='fr'
+      ?`Pas tout à fait ! La réponse est « ${q.choices[q.correctIndex]} ». Continue !`
+      :`Not quite! The answer is "${q.choices[q.correctIndex]}". Keep going!`;
+    fb.className='feedback-bar wrong show';
+    upsertProfile(activeProfile);
+  }
+  document.getElementById('nextBtn').classList.add('show');
+}
+
+function nextQuestion(){
+  currentQIndex++;
+  if(currentQIndex>=currentStory.questions.length) showCelebration();
+  else showQuestion();
+}
+
+// ── CELEBRATION ───────────────────────────────────────────────────────────────
+function showCelebration(){
+  if(!activeProfile[lang]) activeProfile[lang]={stars:0,storiesRead:0,correctAnswers:0,totalAnswers:0};
+  activeProfile[lang].storiesRead=(activeProfile[lang].storiesRead||0)+1;
+  upsertProfile(activeProfile);
+  updateHud();
+
+  const ls=getLangStats();
+  const msgs=lang==='fr'
+    ?['Incroyable ! 🎉','Fantastique ! ⭐','Super lecteur·rice ! 📚','Tu es une étoile ! 🌟']
+    :['Amazing! 🎉','Fantastic! ⭐','Super Reader! 📚',"You're a Star! 🌟"];
+  const msg=msgs[Math.floor(Math.random()*msgs.length)];
+  const finishText=lang==='fr'?"Tu as fini l'histoire !":'You finished the story!';
+  const starsLabel=lang==='fr'?'étoiles':'stars';
+  const storiesLabel=lang==='fr'?`Histoires lues : ${ls.storiesRead}`:`Stories read: ${ls.storiesRead}`;
+  const againText=lang==='fr'?'Lire une autre histoire 📖':'Read Another Story 📖';
+
+  document.getElementById('contentArea').innerHTML=`
+    <div class="celebration-card">
+      <span class="celebration-emoji">🏆</span>
+      <div class="celebration-title">${msg}</div>
+      <div class="celebration-sub">${finishText}</div>
+      <div class="score-display">⭐ ${ls.stars} ${starsLabel}</div>
+      <div class="celebration-sub">${storiesLabel} &nbsp;|&nbsp; ${getLevelLabel()}</div>
+      <button class="play-again-btn" onclick="playAgain()">${againText}</button>
+    </div>`;
+  launchConfetti();
+  setTimeout(launchConfetti,600);
+}
+
+function playAgain(){ currentStory=null; currentQIndex=0; selectedTopic=null; renderPickerScreen(false); }
+
+// ── CONFETTI ──────────────────────────────────────────────────────────────────
+function launchConfetti(){
+  const colors=['#FFD166','#FF6B6B','#06D6A0','#C77DFF','#4ECDC4','#FF9ECD'];
+  for(let i=0;i<50;i++){
+    const el=document.createElement('div'); el.className='confetti-piece';
+    const sz=8+Math.random()*10;
+    el.style.cssText=`left:${Math.random()*100}vw;top:-10px;width:${sz}px;height:${sz}px;background:${colors[Math.floor(Math.random()*colors.length)]};border-radius:${Math.random()>.5?'50%':'3px'};animation-duration:${1.5+Math.random()*2.5}s;animation-delay:${Math.random()*.6}s;`;
+    document.body.appendChild(el);
+    setTimeout(()=>el.remove(),5000);
+  }
+}
+
+// ── BOOT ──────────────────────────────────────────────────────────────────────
+renderProfileScreen();
+</script>
+</body>
+</html>
